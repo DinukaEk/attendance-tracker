@@ -11,6 +11,7 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/attendance/students', [AttendanceController::class, 'getStudents'])->name('attendance.students');
 });
 
@@ -20,6 +21,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 
 require __DIR__.'/auth.php';

@@ -4,6 +4,33 @@
 <div class="container">
     <h2>Attendance Dashboard</h2>
 
+    <canvas id="attendanceChart" height="100"></canvas>
+
+    @php
+        $chartLabels = $results->pluck('name')->toArray();
+        $chartData = $results->pluck('percentage')->map(fn($p) => $p ?? 0)->toArray();
+    @endphp
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('attendanceChart');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($chartLabels) !!},
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: {!! json_encode($chartData) !!},
+                        backgroundColor: '#4f46e5'
+                    }]
+                },
+                options: { responsive: true }
+            });
+        });
+    </script>
+
+    <br/><hr/><br/>
+
     <form method="GET" action="{{ route('dashboard') }}" class="row g-3 mb-4">
         <div class="col-md-3">
             <label for="date_from">From Date</label>
