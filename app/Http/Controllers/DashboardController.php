@@ -10,7 +10,9 @@ use App\Models\Attendance;
 class DashboardController extends Controller
 {
     public function index(Request $request) {
-        $subjects = Subject::all();
+        $user = auth()->user();
+        $subjects = $user->isAdmin() ? Subject::all() : Subject::where('user_id', $user->id)->get();
+        return view('attendance.index', compact('subjects'));
         $dateFrom = $request->get('date_from', now()->subWeek()->toDateString());
         $dateTo   = $request->get('date_to',   now()->toDateString());
         $subjectId = $request->get('subject_id');

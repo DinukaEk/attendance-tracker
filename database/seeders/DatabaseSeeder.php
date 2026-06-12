@@ -19,9 +19,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $admin = User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'password' => bcrypt('admin1'),
+        ]);
+
+        $teacher1 = User::factory()->create([
+            'name' => 'Teacher One',
+            'email' => 'teacher1@example.com',
+            'role' => 'teacher',
+            'password' => bcrypt('teacher1'),
+        ]);
+
+        $teacher2 = User::factory()->create([
+            'name' => 'Teacher Two',
+            'email' => 'teacher2@example.com',
+            'role' => 'teacher',
+            'password' => bcrypt('teacher2'),
         ]);
 
         // 1. Create 5 subjects
@@ -76,6 +92,13 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        // Assign subjects to teachers
+        $subjects[0]['user_id'] = $teacher1->id;
+        $subjects[1]['user_id'] = $teacher1->id;
+        $subjects[2]['user_id'] = $teacher2->id;
+        $subjects[3]['user_id'] = $teacher2->id;
+        $subjects[4]['user_id'] = $teacher1->id;
 
         // Insert in chunks for performance
         foreach (array_chunk($attendanceData, 500) as $chunk) {

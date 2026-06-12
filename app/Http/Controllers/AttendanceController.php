@@ -10,7 +10,8 @@ use App\Models\Attendance;
 class AttendanceController extends Controller
 {
     public function index() {
-        $subjects = Subject::all();
+        $user = auth()->user();
+        $subjects = $user->isAdmin() ? Subject::all() : Subject::where('user_id', $user->id)->get();
         return view('attendance.index', compact('subjects'));
     }
 
