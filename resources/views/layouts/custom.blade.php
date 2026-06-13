@@ -13,6 +13,7 @@
             <a class="navbar-brand" href="{{ route('dashboard') }}">Attendance Tracker</a>
             <div class="navbar-nav">
                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active fw-bold text-white' : 'text-white' }}" href="{{ route('dashboard') }}">Dashboard</a>
+                <a class="nav-link {{ request()->routeIs('students.*') ? 'active fw-bold text-white' : 'text-white' }}" href="{{ route('students.search') }}">Search Student</a>
                 <a class="nav-link {{ request()->routeIs('attendance.index') ? 'active fw-bold text-white' : 'text-white' }}" href="{{ route('attendance.index') }}">Mark Attendance</a>
                 @if(auth()->user()->isAdmin())
                     <a class="nav-link {{ request()->routeIs('admin.teachers.*') ? 'active fw-bold text-white' : 'text-white' }}" href="{{ route('admin.teachers.index') }}">Manage Teachers</a>

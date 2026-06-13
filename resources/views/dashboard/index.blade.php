@@ -31,7 +31,7 @@
 
     <br/><hr/><br/>
 
-    <form method="GET" action="{{ route('dashboard') }}" class="row g-3 mb-4">
+    <form method="GET" action="{{ route('dashboard') }}" class="mb-4 row g-3">
         <div class="col-md-3">
             <label for="date_from">From Date</label>
             <input type="date" name="date_from" id="date_from" class="form-control" value="{{ $dateFrom }}">
@@ -59,6 +59,23 @@
             <a href="{{ route('dashboard') }}" class="btn btn-secondary">Reset</a>
         </div>
     </form>
+
+    <div class="mb-2 d-flex justify-content-between align-items-center">
+        <div>
+            Showing {{ $results->firstItem() ?? 0 }}–{{ $results->lastItem() ?? 0 }} of {{ $results->total() }} students
+        </div>
+        <form method="GET" action="{{ route('dashboard') }}" class="gap-2 d-flex align-items-center">
+            <input type="hidden" name="date_from" value="{{ $dateFrom }}">
+            <input type="hidden" name="date_to" value="{{ $dateTo }}">
+            <input type="hidden" name="subject_id" value="{{ $subjectId }}">
+            <label for="per_page" class="mb-0">Per page:</label>
+            <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                @foreach([25, 50, 100, 200] as $size)
+                    <option value="{{ $size }}" {{ request('per_page', 50) == $size ? 'selected' : '' }}>{{ $size }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
 
     <table class="table table-striped">
         <thead>

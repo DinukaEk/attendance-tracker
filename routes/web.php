@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 
 
@@ -15,6 +16,9 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/attendance/students', [AttendanceController::class, 'getStudents'])->name('attendance.students');
+    Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
+    Route::get('/students/suggestions', [StudentController::class, 'suggestions'])->name('students.suggestions');
+    Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

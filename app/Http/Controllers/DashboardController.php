@@ -45,10 +45,13 @@ class DashboardController extends Controller
     private function getAttendanceResults($dateFrom, $dateTo, $subjectId)
     {
         $user = auth()->user();
+        $perPage = (int) request('per_page', 50);
+        $perPage = in_array($perPage, [25, 50, 100, 200]) ? $perPage : 50;
         $page = request('page', 1);
-        $cacheKey = "dashboard:{$dateFrom}:{$dateTo}:{$subjectId}:page{$page}:user{$user->id}";
 
-        return Cache::remember($cacheKey, 60, function () use ($dateFrom, $dateTo, $subjectId, $user) {
+        $cacheKey = "dashboard:{$dateFrom}:{$dateTo}:{$subjectId}:page{$page}:per{$perPage}:user{$user->id}";
+
+        return Cache::remember($cacheKey, 60, function () use ($dateFrom, $dateTo, $subjectId, $user, $perPage) {
             $teacherSubjectIds = $user->isAdmin() ? null : $user->subjects->pluck('id')->toArray();
 
             return Student::select('students.id', 'students.name', 'students.registration_number')
@@ -68,7 +71,8 @@ class DashboardController extends Controller
                 ->when(!$subjectId && $teacherSubjectIds !== null, fn($q) => $q->whereHas('subjects', fn($s) => $s->whereIn('subject_id', $teacherSubjectIds)))
                 ->groupBy('students.id', 'students.name', 'students.registration_number')
                 ->orderByDesc('percentage')
-                ->paginate(50);
+                ->paginate($perPage)
+                ->withQueryString();
         });
     }
 }
