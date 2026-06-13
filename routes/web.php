@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\TeacherController;
+
 
 Route::get('/', fn() => redirect()->route('dashboard'));
 
@@ -13,6 +15,10 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/attendance/students', [AttendanceController::class, 'getStudents'])->name('attendance.students');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('teachers', TeacherController::class)->except(['show']);
 });
 
 Route::middleware('auth')->group(function () {

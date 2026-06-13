@@ -14,11 +14,9 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // 1. Create users first
         $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -40,21 +38,21 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('teacher2'),
         ]);
 
-        // 1. Create 5 subjects
-        $subjects = [
-            ['name' => 'Programming Fundamentals', 'code' => 'SIT101'],
-            ['name' => 'Database Systems', 'code' => 'SIT102'],
-            ['name' => 'Web Development', 'code' => 'SIT103'],
-            ['name' => 'Networking Basics', 'code' => 'SIT104'],
-            ['name' => 'Mathematics for IT', 'code' => 'SIT105'],
+        // 2. Create subjects WITH user_id assigned directly
+        $subjectsData = [
+            ['name' => 'Programming Fundamentals', 'code' => 'SIT101', 'user_id' => $teacher1->id],
+            ['name' => 'Database Systems',         'code' => 'SIT102', 'user_id' => $teacher1->id],
+            ['name' => 'Web Development',          'code' => 'SIT103', 'user_id' => $teacher2->id],
+            ['name' => 'Networking Basics',        'code' => 'SIT104', 'user_id' => $teacher2->id],
+            ['name' => 'Mathematics for IT',       'code' => 'SIT105', 'user_id' => $teacher1->id],
         ];
 
         $subjectIds = [];
-        foreach ($subjects as $subject) {
+        foreach ($subjectsData as $subject) {
             $subjectIds[] = Subject::create($subject)->id;
         }
 
-        // 2. Create 50 students
+        // 3. Create 50 students
         $students = [];
         for ($i = 1; $i <= 50; $i++) {
             $students[] = Student::create([
@@ -63,14 +61,14 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 3. Enroll each student in 3-5 random subjects
+        // 4. Enroll each student in 3-5 random subjects
         foreach ($students as $student) {
             $numSubjects = rand(3, 5);
             $enrolledSubjects = collect($subjectIds)->random($numSubjects);
             $student->subjects()->attach($enrolledSubjects);
         }
 
-        // 4. Seed attendance records for the past 14 days
+        // 5. Seed attendance records for the past 14 days
         $attendanceData = [];
         $today = now()->startOfDay();
 
@@ -85,7 +83,7 @@ class DatabaseSeeder extends Seeder
                         'student_id' => $student->id,
                         'subject_id' => $subjectId,
                         'date' => $date,
-                        'present' => rand(0, 100) < 80, // ~80% attendance rate
+                        'present' => rand(0, 100) < 80,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
@@ -93,14 +91,6 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Assign subjects to teachers
-        $subjects[0]['user_id'] = $teacher1->id;
-        $subjects[1]['user_id'] = $teacher1->id;
-        $subjects[2]['user_id'] = $teacher2->id;
-        $subjects[3]['user_id'] = $teacher2->id;
-        $subjects[4]['user_id'] = $teacher1->id;
-
-        // Insert in chunks for performance
         foreach (array_chunk($attendanceData, 500) as $chunk) {
             DB::table('attendances')->insert($chunk);
         }
