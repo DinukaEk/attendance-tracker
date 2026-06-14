@@ -1,117 +1,146 @@
 @extends('layouts.custom')
 
+@section('title', 'Dashboard')
+
 @section('content')
-<div class="container">
-    <h2>Attendance Dashboard</h2>
 
-    <canvas id="attendanceChart" height="100"></canvas>
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-stone-800">Attendance Dashboard</h1>
+    <p class="mt-1 text-sm text-stone-500">Overview of student attendance within the selected date range.</p>
+</div>
 
-    @php
-        $chartLabels = $results->pluck('name')->toArray();
-        $chartData = $results->pluck('percentage')->map(fn($p) => $p ?? 0)->toArray();
-    @endphp
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const ctx = document.getElementById('attendanceChart');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($chartLabels) !!},
-                    datasets: [{
-                        label: 'Attendance %',
-                        data: {!! json_encode($chartData) !!},
-                        backgroundColor: '#4f46e5'
-                    }]
-                },
-                options: { responsive: true }
-            });
-        });
-    </script>
-
-    <br/><hr/><br/>
-
-    <form method="GET" action="{{ route('dashboard') }}" class="mb-4 row g-3">
-        <div class="col-md-3">
-            <label for="date_from">From Date</label>
-            <input type="date" name="date_from" id="date_from" class="form-control" value="{{ $dateFrom }}">
-        </div>
-
-        <div class="col-md-3">
-            <label for="date_to">To Date</label>
-            <input type="date" name="date_to" id="date_to" class="form-control" value="{{ $dateTo }}">
-        </div>
-
-        <div class="col-md-3">
-            <label for="subject_id">Subject</label>
-            <select name="subject_id" id="subject_id" class="form-control">
-                <option value="">All Subjects</option>
-                @foreach($subjects as $subject)
-                    <option value="{{ $subject->id }}" {{ (string)$subjectId === (string)$subject->id ? 'selected' : '' }}>
-                        {{ $subject->name }} ({{ $subject->code }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary me-2">Filter</button>
-            <a href="{{ route('dashboard') }}" class="btn btn-secondary">Reset</a>
-        </div>
-    </form>
-
-    <div class="mb-2 d-flex justify-content-between align-items-center">
-        <div>
-            Showing {{ $results->firstItem() ?? 0 }}–{{ $results->lastItem() ?? 0 }} of {{ $results->total() }} students
-        </div>
-        <form method="GET" action="{{ route('dashboard') }}" class="gap-2 d-flex align-items-center">
-            <input type="hidden" name="date_from" value="{{ $dateFrom }}">
-            <input type="hidden" name="date_to" value="{{ $dateTo }}">
-            <input type="hidden" name="subject_id" value="{{ $subjectId }}">
-            <label for="per_page" class="mb-0">Per page:</label>
-            <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
-                @foreach([25, 50, 100, 200] as $size)
-                    <option value="{{ $size }}" {{ request('per_page', 50) == $size ? 'selected' : '' }}>{{ $size }}</option>
-                @endforeach
-            </select>
-        </form>
+{{-- Filters --}}
+<form method="GET" action="{{ route('dashboard') }}"
+      class="flex flex-wrap items-end gap-4 p-4 mb-6 bg-white border shadow-sm rounded-xl border-stone-200">
+    <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-stone-500">From Date</label>
+        <input type="date" name="date_from" value="{{ $dateFrom }}"
+               class="px-3 py-2 text-sm border rounded-lg bg-stone-50 border-stone-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
     </div>
+    <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-stone-500">To Date</label>
+        <input type="date" name="date_to" value="{{ $dateTo }}"
+               class="px-3 py-2 text-sm border rounded-lg bg-stone-50 border-stone-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+    </div>
+    <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-stone-500">Subject</label>
+        <select name="subject_id"
+                class="px-3 py-2 text-sm border rounded-lg bg-stone-50 border-stone-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <option value="">All Subjects</option>
+            @foreach($subjects as $subject)
+                <option value="{{ $subject->id }}" {{ (string)$subjectId === (string)$subject->id ? 'selected' : '' }}>
+                    {{ $subject->name }} ({{ $subject->code }})
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-stone-500">Per Page</label>
+        <select name="per_page"
+                class="px-3 py-2 text-sm border rounded-lg bg-stone-50 border-stone-200 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            @foreach([25, 50, 100, 200] as $size)
+                <option value="{{ $size }}" {{ request('per_page', 50) == $size ? 'selected' : '' }}>{{ $size }}</option>
+            @endforeach
+        </select>
+    </div>
+    <button type="submit" class="px-4 py-2 text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-500">
+        Filter
+    </button>
+    <a href="{{ route('dashboard') }}" class="px-4 py-2 text-sm font-medium transition-colors rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600">
+        Reset
+    </a>
+</form>
 
-    <table class="table table-striped">
+{{-- Chart --}}
+@php
+    $chartLabels = $results->pluck('name')->toArray();
+    $chartData = $results->pluck('percentage')->map(fn($p) => $p ?? 0)->toArray();
+@endphp
+
+<div class="p-4 mb-6 bg-white border shadow-sm border-stone-200 rounded-xl">
+    <h2 class="mb-3 text-xs font-semibold tracking-wide uppercase text-stone-400">Attendance % — Current Page</h2>
+    <canvas id="attendanceChart" height="80"></canvas>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    new Chart(document.getElementById('attendanceChart'), {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($chartLabels) !!},
+            datasets: [{
+                label: 'Attendance %',
+                data: {!! json_encode($chartData) !!},
+                backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 2,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#78716c' } } },
+            scales: {
+                x: { ticks: { color: '#a8a29e' }, grid: { color: '#f5f5f4' } },
+                y: {
+                    min: 0, max: 100,
+                    ticks: { color: '#a8a29e', callback: v => v + '%' },
+                    grid: { color: '#f5f5f4' }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{{-- Table --}}
+<div class="overflow-hidden bg-white border shadow-sm border-stone-200 rounded-xl">
+    <table class="w-full text-sm">
         <thead>
-            <tr>
-                <th>Registration No.</th>
-                <th>Name</th>
-                <th>Classes Held</th>
-                <th>Classes Attended</th>
-                <th>Attendance %</th>
+            <tr class="text-xs tracking-wide uppercase border-b bg-stone-50 text-stone-400 border-stone-200">
+                <th class="px-4 py-3 text-left">Reg. No.</th>
+                <th class="px-4 py-3 text-left">Name</th>
+                <th class="px-4 py-3 text-center">Classes Held</th>
+                <th class="px-4 py-3 text-center">Attended</th>
+                <th class="px-4 py-3 text-center">Attendance %</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-stone-100">
             @forelse($results as $row)
-                <tr>
-                    <td>{{ $row->registration_number }}</td>
-                    <td>{{ $row->name }}</td>
-                    <td>{{ $row->total_classes }}</td>
-                    <td>{{ $row->attended }}</td>
-                    <td>
+                <tr class="transition-colors hover:bg-stone-50">
+                    <td class="px-4 py-3 font-mono text-stone-500">{{ $row->registration_number }}</td>
+                    <td class="px-4 py-3 font-medium text-stone-800">{{ $row->name }}</td>
+                    <td class="px-4 py-3 text-center text-stone-600">{{ $row->total_classes }}</td>
+                    <td class="px-4 py-3 text-center text-stone-600">{{ $row->attended }}</td>
+                    <td class="px-4 py-3 text-center">
                         @if($row->percentage !== null)
-                            <span class="badge bg-{{ $row->percentage >= 75 ? 'success' : ($row->percentage >= 50 ? 'warning' : 'danger') }}">
+                            @php
+                                $color = $row->percentage >= 75
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : ($row->percentage >= 50
+                                        ? 'bg-amber-100 text-amber-700'
+                                        : 'bg-red-100 text-red-700');
+                            @endphp
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $color }}">
                                 {{ $row->percentage }}%
                             </span>
                         @else
-                            <span class="text-muted">N/A</span>
+                            <span class="text-stone-400">N/A</span>
                         @endif
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center">No records found for the selected filters.</td>
+                    <td colspan="5" class="px-4 py-8 text-center text-stone-400">No records found for the selected filters.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
-
-    {{ $results->links() }}
 </div>
+
+<div class="flex items-center justify-between mt-4 text-sm text-stone-400">
+    <span>Showing {{ $results->firstItem() ?? 0 }}–{{ $results->lastItem() ?? 0 }} of {{ $results->total() }} students</span>
+    {{ $results->links('vendor.pagination.tailwind-light') }}
+</div>
+
 @endsection
