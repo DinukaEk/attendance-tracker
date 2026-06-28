@@ -13,7 +13,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+# Install ALL dependencies including dev (needed for Faker in seeders)
+RUN composer install --optimize-autoloader
 
 RUN php artisan config:cache || true
 RUN php artisan route:cache || true
