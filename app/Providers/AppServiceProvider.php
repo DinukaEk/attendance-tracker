@@ -9,6 +9,10 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         Paginator::defaultView('vendor.pagination.tailwind-dark');
         Paginator::defaultSimpleView('vendor.pagination.tailwind-dark');
     }
