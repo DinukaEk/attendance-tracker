@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\StudentManagementController;
+use App\Http\Controllers\Admin\SubjectController;
 
 
 Route::get('/', fn() => redirect()->route('dashboard'));
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'teacher'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('teachers', TeacherController::class)->except(['show']);
+    Route::resource('subjects', SubjectController::class)->except(['show']);
 });
 
 Route::middleware('auth')->group(function () {
