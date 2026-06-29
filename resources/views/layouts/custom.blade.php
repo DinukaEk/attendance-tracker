@@ -38,10 +38,14 @@
                     Manage Students
                 </a>
                 @if(auth()->user()->isAdmin())
-                <a href="{{ route('admin.teachers.index') }}"
-                   class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.*') ? 'bg-indigo-600 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100' }}">
-                    Manage Teachers
-                </a>
+                    <a href="{{ route('admin.subjects.index') }}"
+                    class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.subjects.*') ? 'bg-indigo-600 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100' }}">
+                        Manage Subjects
+                    </a>
+                    <a href="{{ route('admin.teachers.index') }}"
+                    class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.teachers.*') ? 'bg-indigo-600 text-white' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100' }}">
+                        Manage Teachers
+                    </a>
                 @endif
             </div>
         </div>
